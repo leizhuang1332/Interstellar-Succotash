@@ -1,6 +1,35 @@
-Git鼓励大量使用分支：
+<<<版本回退>>>
+$ git reset --hard HEAD^; HEAD^:回退到上个版
+$ git reset --hard 1094a; 1094a:指定回退版本
 
-查看分支：git branch
+HEAD指向的版本就是当前版本，因此，Git允许我们在版本的历史之间穿梭，使用命令git reset --hard commit_id。
+<<<版本回退>>>
+
+<<<查看日志>>>
+穿梭前，用git log可以查看提交历史，以便确定要回退到哪个版本。
+
+要重返未来，用git reflog查看命令历史，以便确定要回到未来的哪个版本。
+
+git log --graph --pretty=oneline --abbrev-commit;
+--graph: 查看分支的合并情况
+--pretty=oneline: 简化日志内容
+--abbrev-commit: 简化版本号
+<<<查看日志>>>
+
+<<<撤销修改>>>
+命令git checkout -- <file>意思就是，把文件在工作区的修改全部撤销
+git checkout -- file命令中的--很重要，没有--，就变成了“切换到另一个分支”的命令
+
+用命令git reset HEAD <file>可以把暂存区的修改撤销掉，重新放回工作区
+
+场景1：当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令git checkout -- file。
+
+场景2：当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令git reset HEAD <file>，就回到了场景1，第二步按场景1操作。
+<<<撤销修改>>>
+
+
+<<<分支>>>
+查看分支：git branch   -a: 查看所有分支包括远程分支
 
 创建分支：git branch <name>
 
@@ -11,11 +40,12 @@ Git鼓励大量使用分支：
 合并某分支到当前分支：git merge <name>
 
 删除分支：git branch -d <name>
-
-查看分支的合并情况：git log --graph --pretty=oneline --abbrev-commit
+<<<分支>>>
 
 推送到远程仓库：git push origin <branch name>
+从远程库更新：git pull origin <branch name>
 
+<<<tag>>>
 命令git tag <tagname>用于新建一个标签，默认为HEAD，也可以指定一个commit id；
 
 命令git tag -a <tagname> -m "blablabla..."可以指定标签信息；
@@ -29,3 +59,4 @@ Git鼓励大量使用分支：
 命令git tag -d <tagname>可以删除一个本地标签；
 
 命令git push origin :refs/tags/<tagname>可以删除一个远程标签。(先在本地删除)
+<<<tag>>>
