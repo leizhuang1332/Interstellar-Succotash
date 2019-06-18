@@ -155,7 +155,7 @@ public class ProxyCglib<T, R> {
 	}
 	
 	public static void main(String[] args) {
-		// 目标对象（需要有接口实现）
+		// 目标对象（不需要有接口实现）
 		CglibTarget target = new CglibTarget();
 		CglibTarget proxy = (CglibTarget) ProxyCglib.newBuilder() 
 				.setTarget(target)
