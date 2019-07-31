@@ -1,0 +1,126 @@
+用户购买商品,下单时,有时不小心连续点击多次;
+或者网络不好,导致用户以为没有提交,重复点击提交按钮;
+网络层面比如nginx的重发.
+
+对于分布式系统,提交订单的n个请求可能会被不同的服务单体消费,
+那么就会生成多个相同(除了订单号,其他购买信息完全一样)的订单,
+
+后果:
+
+产生了脏数据,影响了校验,有时甚至会影响正常业务的执行;
+前端用户会发现产生了多个订单,让用户迷茫,不知所措.
+代码如下:
+
+ /***
+     * 提交订单
+     * @param model
+     * @param request
+     * @param response
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/order/submit/json", produces = SystemHWUtil.RESPONSE_CONTENTTYPE_JSON_UTF)
+    public String jsonSubmitOrder2(Model model, HttpServletRequest request, HttpServletResponse response
+            , @RequestParam(required = false) Boolean del) {
+        //可以抽取出常量
+        String lockUniquePrefix = "lock";
+
+        Jedis jedis = getJedis();
+        //1. 获取锁
+        // key:"lock"+方法名,value:时间戳
+        //NX -- Only set the key if it does not already exist.
+        String key = lockUniquePrefix + Thread.currentThread().getStackTrace()[1].getMethodName();
+        //"OK":成功;null:失败
+        String result = jedis.set(key, "aa", "NX", "EX"/*seconds*/, 1000);
+        Const.pool.returnResource(jedis);
+        boolean success = "OK".equals(result);
+        System.out.println("success :" + success);
+        System.out.println("result :" + result);
+
+        if (success) {
+            //2. 执行具体业务逻辑
+            //...
+        }
+
+
+        //3. 业务逻辑执行完成之后,释放锁
+        
+        jedis = getJedis();
+        jedis.del(key);
+        Const.pool.returnResource(jedis);
+        
+
+
+        return BaseResponseDto.put2("result", result).put("success", success).toJson();
+    }
+    要使用"NX"呢? 因为只有当key不存在时,操作才会成功, 即key不存在时,jedis.set返回"OK",表示获取锁成功; key存在时,jedis.set返回null,表示获取锁失败
+
+不同的两个用户同时提交订单,是允许并发的,这种情况不应该使用锁机制来限制,
+所以我们使用分布式锁限制的只是 两次请求信息完全相同的两次请求,
+造成这种两次完全相同的请求的原因,可能是网络卡顿导致用户重复点击,或者nginx 的重发
+
+优化之后的代码:
+
+ //可以抽取出常量
+        String lockUniquePrefix = "lock";
+
+        Jedis jedis = getJedis();
+        //1. 获取锁
+        // key:"lock"+方法名,value:时间戳
+        //NX -- Only set the key if it does not already exist.
+        String key = lockUniquePrefix + Thread.currentThread().getStackTrace()[1].getMethodName();
+        Integer userId = 222;
+        String conventionK = requestSafeThreadParamDto.getCid();
+        //不同的两个用户同时提交订单,是允许并发的,这种情况不应该使用锁机制来限制,
+        //所以我们使用分布式锁限制的只是 两次请求信息完全相同的两次请求,
+        //造成这种两次完全相同的请求的原因,可能是网络卡顿导致用户重复点击,或者nginx 的重发
+        String hashSource = WebServletUtil.buildHashSource(request, userId, conventionK);
+        //对请求信息 做hash
+        long crc32Long = EncryptionUtil.getHash(hashSource);
+        //"OK":成功;null:失败
+        String result = jedis.set(key + crc32Long, "aa", "NX", "EX"/*seconds*/, 1000);
+        Const.pool.returnResource(jedis);
+        boolean success = "OK".equals(result);
+        System.out.println("success :" + success);
+        System.out.println("result :" + result);
+
+        try {
+            if (success) {
+                //2. 执行具体业务逻辑
+                //...
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            //3. 业务逻辑执行完成之后,释放锁
+            if (null != del && del) {
+                jedis = getJedis();
+                jedis.del(key);
+                Const.pool.returnResource(jedis);
+            }
+        }
+
+
+
+//        return new BaseResponseDto(true).setValue(result).toJson();
+        return BaseResponseDto.put2("result", result).put("success", success).toJson();
+        
+        为什么要使用redis
+因为关于锁有两个重要的操作:
+
+获取锁;
+释放锁.
+在分布式环境,必须保证这两个操作是原子性的,
+即不能把获取锁分为两步:先查询,再add.
+同时,获取锁时,能够设置有效期.
+
+分布式锁实现时要注意的问题
+提供锁的服务必须是一个唯一的服务,即负载均衡的n个服务单体访问的是同一个服务;
+能够设置锁的有效期,不能让某个消费者永久地持有锁;
+能够释放锁;
+不同的业务逻辑竞争不同的锁,必须下单和减库存 使用不同的锁.
+redis 还能做什么
+redis除了可以实现分布式锁,还能作为缓存服务器,
+在实现需求中,我经常把一些容易变化的配置放在redis中, 这样当产品经理需求变更时,我只需修改redis,即时生效,不用上线
+
+redis 还可以当做定时器
