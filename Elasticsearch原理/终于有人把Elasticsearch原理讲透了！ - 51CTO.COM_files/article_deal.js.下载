@@ -1,0 +1,22 @@
+$(function(){
+    //隐藏2018年以前的文章中的图片
+    if($(".wznr").find("em").length){
+        var publish_time = $(".wznr").find("em").html();
+        var publish_timestamp = new Date(Date.parse(publish_time.replace(/-/g, "/"))).getTime();
+
+        var limit_time = "2018-01-01 00:00:00";
+        var limit_timestamp = new Date(Date.parse(limit_time.replace(/-/g, "/"))).getTime();
+
+        if(publish_timestamp < limit_timestamp){
+            $(".zwnr").find("img").remove();
+        }
+    }else{
+        $("#content").find("img").remove();
+    }
+
+    //文章中最新专题改为专题推荐
+    if($(".zxzt").length){
+        $(".zxzt").children('h2').find('span').text("专题推荐");
+    }
+})
+

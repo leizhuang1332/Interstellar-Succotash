@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)http://developer.51cto.com/art/201904/594615.htm -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=GBK">
+    
+    <title>终于有人把Elasticsearch原理讲透了！ - 51CTO.COM</title>
+    <meta name="description" content="小史是一个非科班的程序员，虽然学的是电子专业，但是通过自己的努力成功通过了面试，现在要开始迎接新生活了。">
+    <meta name="keywords" content="Elasticsearch,程序员,Lucene">
+    <!--<base target="_blank">--><base href="." target="_blank">
+    <link rel="stylesheet" type="text/css" href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/article_head.css">
+    <link rel="stylesheet" type="text/css" href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/article_layout.css">
+    <link rel="stylesheet" type="text/css" href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/article_right.css">
+
+    <style type="text/css">
+        .clearfix{*zoom:1;}
+        .clearfix:after{content:'\0020';display:block;height:0;font-size:0;line-height:0;clear:both;overflow:hidden}
+    </style>
+<link rel="stylesheet" href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/share_style0_16.css"><style type="text/css">[paradigm-78854960983] .paradigm-article-box { 
+	background-color: #FFFFFF; 
+}
+[paradigm-78854960983] .paradigm-article-fresh-btn { 
+	font-size: 14px;
+	color: #979797;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+	padding: 6px 7px;
+	line-height: 1.42857143;
+	cursor: pointer; 
+}
+[paradigm-78854960983] .paradigm-box-title-bar { 
+	border: 1px solid #F5F5F5;
+	border-top: none;
+	border-right: none;
+	border-left: none;
+	height: 40px;
+	line-height: 40px; 
+}
+[paradigm-78854960983] .paradigm-article-row-dis { 
+	border-top: 1px solid #E5E9EF;
+	margin-top: 8px;
+	margin-bottom: 8px;
+	box-sizing: border-box; 
+}
+[paradigm-78854960983] .paradigm-article-helper { 
+	line-height: 14px;
+	font-size: 12px;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+	font-family: 微软雅黑; 
+}
+[paradigm-78854960983] .paradigm-half-margin-top { 
+	margin-top: 5px; 
+}
+[paradigm-78854960983] .paradigm-half-margin-left { 
+	margin-left: 5px; 
+}
+[paradigm-78854960983] .paradigm-article-img.paradigm-single { 
+	width: 298px;
+	height: 167.625px; 
+}
+[paradigm-78854960983] .paradigm-article-img.multi { 
+	width: 95.33333333333333px;
+	height: 53.625px;
+	margin-left: 5px; 
+}
+[paradigm-78854960983] .paradigm-article-img.multi:first-of-type { 
+	margin-left: 0; 
+}
+[paradigm-78854960983] .paradigm-article-img.left { 
+	width: 150px;
+	height: 84px; 
+}
+[paradigm-78854960983] .paradigm-article-item { 
+	width: 298px;
+	margin-right: 10px; 
+}
+[paradigm-78854960983] .paradigm-article-item:last-of-type { 
+	margin-right: 0; 
+}
+[paradigm-78854960983] .paradigm-article-title { 
+	line-height: 18px;
+	height: auto;
+	max-height: 18px;
+	font-size: 14px;
+	color: #333333;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+	font-family: 微软雅黑; 
+}
+[paradigm-78854960983] .paradigm-article-title:hover { 
+	color: #CC0000;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none; 
+}
+[paradigm-78854960983] .paradigm-article-title:active { 
+	color: #000000;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none; 
+}
+[paradigm-78854960983] .paradigm-article-abstract { 
+	line-height: 18px;
+	height: auto;
+	max-height: 36px;
+	font-size: 12px;
+	color: #9B9B9B;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+	font-family: 微软雅黑; 
+}
+[paradigm-78854960983] .paradigm-article-helper { 
+	line-height: 26px;
+	font-size: 12px;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+	font-family: 微软雅黑;
+	height: 26px; 
+}
+[paradigm-78854960983] .paradigm-helper-item { 
+	margin-right: 5px; 
+}
+[paradigm-78854960983] .paradigm-helper-item:last-of-type { 
+	margin-right: 0; 
+}
+[paradigm-78854960983] .paradigm-helper-label { 
+	background-color: #D5D9DD;
+	color: #7F8FA4;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+	padding: 4px 6px;
+	line-height: 1.42857143; 
+}
+[paradigm-78854960983] .paradigm-helper-publisher-id { 
+	color: #9B9B9B;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none; 
+}
+[paradigm-78854960983] .paradigm-helper-publish-time { 
+	color: #9B9B9B;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none; 
+}
+[paradigm-78854960983] .paradigm-helper-reading-count { 
+	color: #9B9B9B;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none; 
+}
+[paradigm-78854960983] .paradigm-box-title { 
+	font-size: 16px;
+	color: #000000;
+	font-weight: bold;
+	font-style: normal;
+	text-decoration: none;
+	font-family: 微软雅黑; 
+}
+[paradigm-78854960983] .paradigm-modifier { 
+	display: inline-block;
+	height: 100%;
+	box-sizing: border-box; 
+}
+[paradigm-78854960983] .paradigm-modifier-bottom { 
+	border-bottom: solid 2px #7F8FA4; 
+}
+[paradigm-78854960983] .paradigm-article-row-dis:last-child { 
+	display: none; 
+}
+[paradigm-78854960983] .paradigm-article-box-body { 
+	width: 300px;
+	padding-top: 10px;
+	padding-bottom: 10px; 
+}
+[paradigm-78854960983] .paradigm-box-title-bar { 
+	width: 300px; 
+}
+[paradigm-78854960983] .paradigm-right-publish-time { 
+	line-height: 14px;
+	font-size: 12px;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+	font-family: 微软雅黑;
+	color: #9B9B9B; 
+}
+</style><style id="svelte-q07m5k-style">.paradigm-article-box.svelte-q07m5k{display:inline-block;height:auto;overflow-x:auto;overflow-y:hidden;box-sizing:border-box}.paradigm-article-box-inner.svelte-q07m5k{height:auto;box-sizing:border-box}.paradigm-box-title-bar.svelte-q07m5k{position:relative;text-align:left;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:row;justify-content:space-between;align-content:center}.paradigm-article-fresh-btn-wrapper.svelte-q07m5k{display:flex;flex-direction:column;justify-content:center}.paradigm-article-box-body.svelte-q07m5k{box-sizing:border-box}.four-paradigm-article-box a{text-decoration:none}.paradigm-clearfix:before, .paradigm-clearfix:before, .paradigm-clearfix:after{display:table;content:" "}.paradigm-clearfix:after{clear:both}.paradigm-clearfix{*zoom:1}.four-paradigm-article-box .paradigm-article-img{background-repeat:no-repeat;background-position:center center;background-size:cover;background-color:#e5e9ef;background-image:url(https://nbrecsys.4paradigm.com/resource/img/recom-render-placeholder.jpg)}.paradigm-bottom-logo-item.svelte-q07m5k{box-sizing:border-box;margin-top:15px}</style><style id="svelte-fxlrhf-style">.paradigm-article-carousel-ctr.svelte-fxlrhf{margin-top:12px;text-align:center}.paradigm-article-carousel-btn.svelte-fxlrhf{display:inline-block;box-sizing:border-box;margin:0 5px;width:10px;height:10px;position:relative;top:-5px;background-color:#e5e9ef;border-radius:50%;box-sizing:content-box;cursor:pointer;vertical-align:middle}.paradigm-article-carousel-btn.active.svelte-fxlrhf{background-color:#7f8fa4}.paradigm-layout-fixed.svelte-fxlrhf .paradigm-article-carousel-pre.svelte-fxlrhf,.paradigm-layout-fixed.svelte-fxlrhf .paradigm-article-carousel-next.svelte-fxlrhf{width:15px;height:15px;line-height:15px;display:inline-block;border-radius:3px;border:1px solid #d9d9d9;background-color:#fff;margin:0 10px;cursor:pointer}.paradigm-layout-fixed.svelte-fxlrhf .paradigm-article-carousel-pre.svelte-fxlrhf:hover,.paradigm-layout-fixed.svelte-fxlrhf .paradigm-article-carousel-next.svelte-fxlrhf:hover{border:1px solid #7f8fa4;color:#7f8fa4}.paradigm-layout-fixed.svelte-fxlrhf .paradigm-article-carousel-pre.not-click.svelte-fxlrhf,.paradigm-layout-fixed.svelte-fxlrhf .paradigm-article-carousel-next.not-click.svelte-fxlrhf{border-color:#d9d9d9;color:rgba(0,0,0,.25);cursor:not-allowed}</style><style id="svelte-1f19shf-style">.paradigm-article-row.svelte-1f19shf{box-sizing:border-box;font-size:0}</style><style id="svelte-1h8u3is-style">.paradigm-recomm-logo-wrapper.svelte-1h8u3is{display:flex;justify-content:center;align-items:center}.paradigm-recomm-loading.svelte-1h8u3is{margin-right:8px;width:14px;height:14px}.paradigm-recomm-logo.svelte-1h8u3is{display:flex;justify-content:center;align-items:center;font-size:0}.paradigm-recomm-feed-logo.svelte-1h8u3is{display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:300;line-height:1;color:#000000}.paradigm-recomm-logo-right.svelte-1h8u3is{width:100%;display:flex;justify-content:flex-end}.paradigm-recomm-logo-img.svelte-1h8u3is{display:inline;width:120px;vertical-align:middle}.paradigm-recomm-logo-img.firstclick.svelte-1h8u3is{width:40px;height:16px;display:block}.paradigm-recomm-logo-tip.svelte-1h8u3is{height:16px;line-height:16px;margin-right:4px}.paradigm-rotate.svelte-1h8u3is{-webkit-transition-property:-webkit-transform;-webkit-transition-duration:1s;-moz-transition-property:-moz-transform;-moz-transition-duration:1s;-webkit-animation:svelte-1h8u3is-rotate 2s linear infinite;-moz-animation:svelte-1h8u3is-rotate 2s linear infinite;-o-animation:svelte-1h8u3is-rotate 2s linear infinite;animation:svelte-1h8u3is-rotate 2s linear infinite}@-webkit-keyframes svelte-1h8u3is-rotate{from{-webkit-transform:rotate(0deg)
+    }to{-webkit-transform:rotate(360deg)
+    }}@-moz-keyframes svelte-1h8u3is-rotate{from{-moz-transform:rotate(0deg)
+    }to{-moz-transform:rotate(359deg)
+    }}@-o-keyframes svelte-1h8u3is-rotate{from{-o-transform:rotate(0deg)
+    }to{-o-transform:rotate(359deg)
+    }}@keyframes svelte-1h8u3is-rotate{from{transform:rotate(0deg)
+    }to{transform:rotate(359deg)
+    }}</style><style id="svelte-7cx0jq-style">.paradigm-article-item.svelte-7cx0jq{float:left;display:inline-block;box-sizing:border-box;cursor:pointer}</style><style id="svelte-1711kkw-style">.paradigm-article-title.svelte-1711kkw{text-align:left;overflow:hidden}</style><style id="svelte-zimvca-style">.paradigm-article-helper.svelte-zimvca{display:flex;justify-content:flex-start;flex-wrap:wrap;color:#9b9b9b;text-align:left;overflow:hidden}.paradigm-helper-item.svelte-zimvca{max-width:100%;display:flex;flex-direction:column;justify-content:center;text-align:left}.paradigm-helper-item.placeholder.svelte-zimvca{order:2;flex-grow:10;width:0;margin:0}.paradigm-helper-content.svelte-zimvca{white-space:nowrap;box-sizing:border-box}.paradigm-helper-publisher-id.svelte-zimvca{max-width:100%;margin-right:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.paradigm-helper-label-wrapper.svelte-zimvca{margin-right:6px}.paradigm-helper-label-wrapper.svelte-zimvca:last-of-type{margin-right:0}.paradigm-helper-label.svelte-zimvca{display:inline-block;text-align:center;white-space:nowrap}.paradigm-article-ads.svelte-zimvca{float:right;width:24px;height:14px}</style></head>
+<body>
+<!--From Stor Https Trans Test-->
+<!-- 导航 开始-->
+<!-- top start -->
+<style>
+    .home-top .subweb .sub_widthAuto{width:auto;}
+    .top-nav .nav li .topnavA_zxf{width:194px;left:-60px;}
+    .top-nav .topnavA_zxf a{padding: 0 10px;}
+    .top-nav .nav li:hover .topnavA_zxf a{width:auto;text-indent:inherit;}
+    .zxf_menubot{background:#F4F4F4;padding:15px 20px 0;border-top:4px solid #be0000;font-size:14px;}
+    .zxf_menubot a{padding:0;}
+    .zxf_menubot dl{margin-right:48px;_margin-right:40px;*margin-right:40px;}
+    .zxf_menubot .nmr{margin-right:0;}
+    .zxf_menubot dt,.zxf_menubot dd{float:left;}
+    .zxf_menulist li{float:left;text-align:left;margin-right:20px;}
+    .zxf_menulist a{display:block;margin-bottom:10px;}
+    .zxf_menulist li.nmr{margin-right:0;}
+    .zxf_menu_ico{width:28px;margin-right:20px;text-align:center;color:#666;}
+    .zxf_menu_ico img{display:block;margin:10px auto 10px;}
+    .redNav{color:#be0000;}
+    .subweb-list .navcodebox{ width:410px; left:-225px; padding:20px 15px;}
+    .subweb-list .navcodebox span{ width:136px;display:inline-block; float:left; text-align:center; color:#747474; font-size:13px; }
+    .subweb-list .navcodebox span p{ padding-top: 10px;color:#333;}
+
+    .rmzw_xx li a {
+        float: left;
+        font-size: 16px;
+        height: 23px;
+        line-height: 23px;
+        overflow: hidden;
+        width: 95%;
+    }
+    .rmzw_xx li span.ico {
+        background: rgba(0, 0, 0, 0) url("https://s2.51cto.com/wyfs02/M02/98/D8/wKiom1lBBebwbP2OAAAAuOBywqs269.png") no-repeat scroll left center;
+        float: left;
+        height: 22px;
+        line-height: 22px;
+        width: 15px;
+    }
+
+    .rmzw_xx li {
+        border-bottom: 1px dotted #ccc;
+        float: left;
+        margin-top: 6px;
+        padding: 5px 0;
+        width: 100%;
+    }
+
+    .ctoll1 dd a {
+        color: #343434;
+        float: left;
+        font-family: "Microsoft YaHei";
+        font-size: 14px;
+        padding: 15px 19px 0;
+    }
+</style>
+<div class="home-top" id="topx">
+    
+</div>
+<!-- top end -->
+<!-- 导航 结束-->
+
+<!-- 频道导航 -->
+
+<!-- 频道导航结束 -->
+
+<div class="main">
+    <!-- 左侧内容 -->
+    <div class="main_left">
+        <div class="wznr">
+            <h2>终于有人把Elasticsearch原理讲透了！</h2>
+            <p>小史是一个非科班的程序员，虽然学的是电子专业，但是通过自己的努力成功通过了面试，现在要开始迎接新生活了。</p>
+            
+        </div>
+        <div class="zwnr">
+            <!-- <h2><a href="http://mdsa.51cto.com/act/Tech/Tech24" target="_blank" style="text-decoration:none;">【51CTO技术沙龙】10月27日，让我们共同探索AI场景化应用实现之道</a></h2> -->
+            <p>小史是一个非科班的程序员，虽然学的是电子专业，但是通过自己的努力成功通过了面试，现在要开始迎接新生活了。</p>
+<p>随着央视诗词大会的热播，小史开始对诗词感兴趣，最喜欢的就是飞花令的环节。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/b90f0d97ba26e7a1cb466ae4ddd1ee8e.jpg-wh_651x-s_3709590712.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/b90f0d97ba26e7a1cb466ae4ddd1ee8e.jpg-wh_651x-s_3709590712.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/21049165449d86509d73dddd41e1a104.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/21049165449d86509d73dddd41e1a104.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>但是由于小史很久没有背过诗词了，飞一个字很难说出一句，很多之前很熟悉的诗句也想不起来。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/cff18d625d974aa93722920793787890.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/cff18d625d974aa93722920793787890.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/52b92f4707a4f6b312f91d5a046a4cdd.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/52b92f4707a4f6b312f91d5a046a4cdd.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/7e88c6b3aaae4bc3b5eaf02c053e274f.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/7e88c6b3aaae4bc3b5eaf02c053e274f.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/c5052bf96458871b87cc4281ac3e4bf2.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/c5052bf96458871b87cc4281ac3e4bf2.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/35affaf153f200f3ceb7d67442b38d92.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/35affaf153f200f3ceb7d67442b38d92.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/6572080a1e6c66519d0d880732709d9d.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/6572080a1e6c66519d0d880732709d9d.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/70fc4a07050b97053886f0451ba2cf9e.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/70fc4a07050b97053886f0451ba2cf9e.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/a06407e96941a36a3708bf2d8bc8ad11.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/a06407e96941a36a3708bf2d8bc8ad11.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ec8b7e30f14e077a794a0c3679d8a91d.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ec8b7e30f14e077a794a0c3679d8a91d.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2d7a007f5c9b2647fcb48fa3fc139da3.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2d7a007f5c9b2647fcb48fa3fc139da3.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p><strong><span style="font-size: x-large;">倒排索引</span></strong></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f5542d390635197c67e9cc1f14d5a31e.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f5542d390635197c67e9cc1f14d5a31e.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/9da0a084151d09e380cb5cf0cb3fd0d7.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/9da0a084151d09e380cb5cf0cb3fd0d7.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/5820ca6e9e8e923a966f907781023f39.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/5820ca6e9e8e923a966f907781023f39.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3c63cf1737037b35e9fc0a3f6e656d90.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3c63cf1737037b35e9fc0a3f6e656d90.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/64c9a8ae902873755cf8c6cafa50ea68.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/64c9a8ae902873755cf8c6cafa50ea68.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f7a583e841a2c70c5006e8f9ab0999f5.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f7a583e841a2c70c5006e8f9ab0999f5.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：但是我让你说出带“前”字的诗句，由于没有索引，你只能遍历脑海中所有诗词，当你的脑海中诗词量大的时候，就很难在短时间内得到结果了。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/d0d4382894b2b5c3fb9a48c696c227e0.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/d0d4382894b2b5c3fb9a48c696c227e0.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/33ea8f149b1970d0dc3cf00207a8d024.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/33ea8f149b1970d0dc3cf00207a8d024.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/67287b4a53fae3634e0ac3a4f4012a73.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/67287b4a53fae3634e0ac3a4f4012a73.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/c2838b8bbf2ced0c643f3dc82203ca70.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/c2838b8bbf2ced0c643f3dc82203ca70.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/51f05b01e1ad320816e51109ccd68298.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/51f05b01e1ad320816e51109ccd68298.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4efea6d5d85f66abed46965f30a80577.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4efea6d5d85f66abed46965f30a80577.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/02edd981025939f732ec5c7c6e380330.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/02edd981025939f732ec5c7c6e380330.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p><strong><span style="font-size: x-large;">索引量爆炸</span></strong></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/5db3356e4d87b22fc65cacef7a1d62e7.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/5db3356e4d87b22fc65cacef7a1d62e7.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f892e90dcc9b14c73aae238a7736e62d.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f892e90dcc9b14c73aae238a7736e62d.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4f47fce7cfa2f9ef64a43b6f88beec02.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4f47fce7cfa2f9ef64a43b6f88beec02.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/1b5f5b3e6aa8b2cdb2eef309c737a907.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/1b5f5b3e6aa8b2cdb2eef309c737a907.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/bc3c83a360c8b782f9326430e192690d.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/bc3c83a360c8b782f9326430e192690d.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/7c92c0a59c6d772515be7e29e7a23466.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/7c92c0a59c6d772515be7e29e7a23466.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/8644c43c592a84212f811e75dbdf278f.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/8644c43c592a84212f811e75dbdf278f.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/b89b766a693b32264a26982036fbd7c9.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/b89b766a693b32264a26982036fbd7c9.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/5db41e50f2de32f2478d812f782b8f33.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/5db41e50f2de32f2478d812f782b8f33.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/0ba8e5675a0a0e3546fd52b9fd622959.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/0ba8e5675a0a0e3546fd52b9fd622959.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/fb20d478340fea364e55cffc79ac2489.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/fb20d478340fea364e55cffc79ac2489.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/eeabeb43e65c23edd558aef6a4915f0e.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/eeabeb43e65c23edd558aef6a4915f0e.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/cc7eab2a6ccb1d709b4414e54a90753a.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/cc7eab2a6ccb1d709b4414e54a90753a.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ca86d549717bc2d4041ccf77b89721c5.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ca86d549717bc2d4041ccf77b89721c5.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ad4faa38e443b89dec31a5777c5d06d0.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ad4faa38e443b89dec31a5777c5d06d0.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/78986965914c169a5b985522fe8a8579.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/78986965914c169a5b985522fe8a8579.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/573a5ae7f2f61859f228e521ca6c86d8.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/573a5ae7f2f61859f228e521ca6c86d8.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/8a605cecdee3765ba4e2a7b8c96a2a75.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/8a605cecdee3765ba4e2a7b8c96a2a75.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f0fdf574418b86a1871fdbc6ab3a7301.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f0fdf574418b86a1871fdbc6ab3a7301.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p><strong><span style="font-size: x-large;">搜索引擎原理</span></strong></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3da871a6c54837df09d658595ffbed59.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3da871a6c54837df09d658595ffbed59.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/65c5724aa69762eef80b58e52b7c7572.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/65c5724aa69762eef80b58e52b7c7572.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/73dad3a56058c0db1ac077263f616062.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/73dad3a56058c0db1ac077263f616062.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/93aceb3f291914d7eeefb84dc1ea8807.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/93aceb3f291914d7eeefb84dc1ea8807.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/35d000bf31d11eef3177febe71d0419d.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/35d000bf31d11eef3177febe71d0419d.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/e393eee16061dc108700ca0f9651b07f.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/e393eee16061dc108700ca0f9651b07f.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/b346e955bc21c928cfcf9946ab445528.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/b346e955bc21c928cfcf9946ab445528.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f881573774af982ae2d5434d50c9278e.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f881573774af982ae2d5434d50c9278e.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f649400f77afb2c2f51f6253a6699a69.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f649400f77afb2c2f51f6253a6699a69.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ba424785975cde27c300069832ad1f60.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ba424785975cde27c300069832ad1f60.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4767df311b240f6ce2845116f0f56a74.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4767df311b240f6ce2845116f0f56a74.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/22d4da09a328cb4230c12d506e53c5cb.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/22d4da09a328cb4230c12d506e53c5cb.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/35a148c1c1942bb9aea29b043414cca2.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/35a148c1c1942bb9aea29b043414cca2.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/a77ee9ea0b83d9ab88cb69abdbd23e39.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/a77ee9ea0b83d9ab88cb69abdbd23e39.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f94d48c202a91f1f0a48ce1832441ec1.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f94d48c202a91f1f0a48ce1832441ec1.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p><strong><span style="font-size: x-large;">Elasticsearch 简介</span></strong></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3a525e3eda3eafe8666de25c5746c780.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3a525e3eda3eafe8666de25c5746c780.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/fac95dbe3e875fb22e7988090310f9fc.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/fac95dbe3e875fb22e7988090310f9fc.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/a51b8c6738ace50e252d3f402ca4a27f.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/a51b8c6738ace50e252d3f402ca4a27f.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/fb0bcc29fb72958e323fb12d1f5c7f6c.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/fb0bcc29fb72958e323fb12d1f5c7f6c.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/7a067799b711d1996daf58c7f96a66c4.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/7a067799b711d1996daf58c7f96a66c4.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：但是 Lucene 还是一个库，必须要懂一点搜索引擎原理的人才能用的好，所以后来又有人基于 Lucene 进行封装，写出了 Elasticsearch。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4e5410202a24294d5e21358bb3dbf8ca.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4e5410202a24294d5e21358bb3dbf8ca.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/67d44ab8cc8ef6473561e777cf2ddd34.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/67d44ab8cc8ef6473561e777cf2ddd34.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/cb6d9c99f101c60f170179f3b943782f.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/cb6d9c99f101c60f170179f3b943782f.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/1054dfc9e0bcd34e2feaf4bfea81197e.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/1054dfc9e0bcd34e2feaf4bfea81197e.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/7a8774e38d8c7bbcf6f62d718f13aa1b.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/7a8774e38d8c7bbcf6f62d718f13aa1b.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/fc3a491596c74091864f531ab7cdb4b2.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/fc3a491596c74091864f531ab7cdb4b2.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p><strong><span style="font-size: x-large;">Elasticsearch 基本概念</span></strong></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/8024406b6d7908bf8c0d02c03f5b98c0.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/8024406b6d7908bf8c0d02c03f5b98c0.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/952e2c1d746b0fc4694f7a235a418542.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/952e2c1d746b0fc4694f7a235a418542.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/e1257ad9cb1919a9d44ae621ec662f51.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/e1257ad9cb1919a9d44ae621ec662f51.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ec96c8031e8f80c0a3f99ee3e0702557.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/ec96c8031e8f80c0a3f99ee3e0702557.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/c969f5edc941291d55e19cdf1ac36899.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/c969f5edc941291d55e19cdf1ac36899.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：类型是用来定义数据结构的，你可以认为是 MySQL 中的一张表。文档就是最终的数据了，你可以认为一个文档就是一条记录。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3661c22434448b83537f4dc5a99acd97.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3661c22434448b83537f4dc5a99acd97.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/6dbd42d9ad083de66777fdd5887905c7.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/6dbd42d9ad083de66777fdd5887905c7.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/28a9739dee095bc60e625afef43d881d.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/28a9739dee095bc60e625afef43d881d.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：比如一首诗，有诗题、作者、朝代、字数、诗内容等字段，那么首先，我们可以建立一个名叫 Poems 的索引，然后创建一个名叫 Poem 的类型，类型是通过 Mapping 来定义每个字段的类型。</p>
+<p>比如诗题、作者、朝代都是 Keyword 类型，诗内容是 Text 类型，而字数是 Integer 类型，***就是把数据组织成 Json 格式存放进去了。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/b87268bbe90f5ee8ff479248cc01282e.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/b87268bbe90f5ee8ff479248cc01282e.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/15729b343f87f134ca7c8f3bd5dc54b8.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/15729b343f87f134ca7c8f3bd5dc54b8.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/6cde1d300628c3ad9458d62fa81700b5.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/6cde1d300628c3ad9458d62fa81700b5.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：这个问题问得好，这涉及到分词的问题，Keyword 类型是不会分词的，直接根据字符串内容建立反向索引，Text 类型在存入 Elasticsearch 的时候，会先分词，然后根据分词后的内容建立反向索引。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/8e57aed5bca916051547e019ccd8e81f.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/8e57aed5bca916051547e019ccd8e81f.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4e5494306dc11e691e227f86d9ee6ef9.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4e5494306dc11e691e227f86d9ee6ef9.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3391016d936bc6f696a9cb9b5ecbbe9c.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/3391016d936bc6f696a9cb9b5ecbbe9c.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：之前我们说过，Elasticsearch 把操作都封装成了 HTTP 的 API，我们只要给 Elasticsearch 发送 HTTP 请求就行。</p>
+<p>比如使用 curl -XPUT 'http://ip:port/poems'，就能建立一个名为 Poems 的索引，其他操作也是类似的。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/e9660e5da629f4da646a3435e888c0fe.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/e9660e5da629f4da646a3435e888c0fe.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p><strong><span style="font-size: x-large;">Elasticsearch 分布式原理</span></strong></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4147feb79d320c5139f400ca72193dca.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4147feb79d320c5139f400ca72193dca.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/0379a0a19b078a07ae16556d56dc6001.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/0379a0a19b078a07ae16556d56dc6001.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：没错，Elasticsearch 也是会对数据进行切分，同时每一个分片会保存多个副本，其原因和 HDFS 是一样的，都是为了保证分布式环境下的高可用。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/67cc045d0442c8f1c2990be9589abf75.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/67cc045d0442c8f1c2990be9589abf75.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/791e10e8c82ebd9b39204d6a25928d45.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/791e10e8c82ebd9b39204d6a25928d45.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/bad18c523394ec5b438432c89d5e2151.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/bad18c523394ec5b438432c89d5e2151.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：没错，在 Elasticsearch 中，节点是对等的，节点间会通过自己的一些规则选取集群的 Master，Master 会负责集群状态信息的改变，并同步给其他节点。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/6430c3f1877dc02d57ad8cac34aee262.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/6430c3f1877dc02d57ad8cac34aee262.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/24fbf36f0c0e533b3b4812ad2bc84112.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/24fbf36f0c0e533b3b4812ad2bc84112.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/c7e182f296af1c801be8148761999f0e.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/c7e182f296af1c801be8148761999f0e.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f057a600234351c334200a1430cc658e.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f057a600234351c334200a1430cc658e.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2c845be70c3e1855347320c111797266.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2c845be70c3e1855347320c111797266.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：注意，只有建立索引和类型需要经过 Master，数据的写入有一个简单的 Routing 规则，可以 Route 到集群中的任意节点，所以数据写入压力是分散在整个集群的。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/e744fc3420027c8892a7e533af8a45d5.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/e744fc3420027c8892a7e533af8a45d5.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p><strong><span style="font-size: x-large;">ELK 系统</span></strong></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/bf5c0f3c7042f764992ea0793f1f1377.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/bf5c0f3c7042f764992ea0793f1f1377.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f0f55f6e1c5b8b11a7e6bb1bf90b667c.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f0f55f6e1c5b8b11a7e6bb1bf90b667c.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：其实很多公司都用 Elasticsearch 搭建 ELK 系统，也就是日志分析系统。其中 E 就是 Elasticsearch，L 是 Logstash，是一个日志收集系统，K 是 Kibana，是一个数据可视化平台。</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2aac85380a65c7e31d96ec9e3d182e7c.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2aac85380a65c7e31d96ec9e3d182e7c.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f3f9ca6d1ad35c6e840f1813cc34b126.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/f3f9ca6d1ad35c6e840f1813cc34b126.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/a08908b776d84114b55bed778ab5fa0d.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/a08908b776d84114b55bed778ab5fa0d.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：分析日志的用处可大了，你想，假如一个分布式系统有 1000 台机器，系统出现故障时，我要看下日志，还得一台一台登录上去查看，是不是非常麻烦？</p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2bc46408b210b8c33e6d1393bca38af2.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2bc46408b210b8c33e6d1393bca38af2.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4d3334f43df6c61b6d000631da674697.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/4d3334f43df6c61b6d000631da674697.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p>吕老师：但是如果日志接入了 ELK 系统就不一样。比如系统运行过程中，突然出现了异常，在日志中就能及时反馈，日志进入 ELK 系统中，我们直接在 Kibana 就能看到日志情况。如果再接入一些实时计算模块，还能做实时报警功能。</p>
+<p style="text-align: center;"></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/833fe4eb65e61be349ed24c8ca3f32fc.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/833fe4eb65e61be349ed24c8ca3f32fc.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p style="text-align: center;"><a href="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2702813b66b8e93a3d6e2b38274c0b2a.jpg" target="_blank"><img src="./终于有人把Elasticsearch原理讲透了！ - 51CTO.COM_files/2702813b66b8e93a3d6e2b38274c0b2a.jpg" alt="" title="" width="auto" height="auto" border="0"></a></p>
+<p><strong><span style="font-size: x-large;">总结</span></strong></p>
+<p>小史学完了 Elasticsearch，在笔记本上写下了如下记录：</p>
+<ul>
+    <li>反向索引又叫倒排索引，是根据文章内容中的关键字建立索引。</li>
+    <li>搜索引擎原理就是建立反向索引。</li>
+    <li>Elasticsearch 在 Lucene 的基础上进行封装，实现了分布式搜索引擎。</li>
+    <li>Elasticsearch 中的索引、类型和文档的概念比较重要，类似于 MySQL 中的数据库、表和行。</li>
+    <li>Elasticsearch 也是 Master-slave 架构，也实现了数据的分片和备份。</li>
+    <li>Elasticsearch 一个典型应用就是 ELK 日志分析系统。</li>
+</ul>
+<p>写完，又高高兴兴背诗去了。</p>
+<p style="text-align: center;">观书有感（朱熹）</p>
+<p style="text-align: center;">半亩方塘一鉴开，天光云影共徘徊。</p>
+<p style="text-align: center;">问渠那得清如许？为有源头活水来。</p>
+
+</div>
+</dt>
+<!-- Baidu Button END -->
+            </dl>
+        </div>
+        <div class="nrdp comment">
+            <!--<script>
+	$(function(){
+		var host = window.location.host;
+		var domain_prefix = host.replace(/\.51cto\.com/, '');
+		function appendRecommend(){
+			$(".share5").prepend("<div id='c21148bdd1e7483e87966a00982902d4'></div>");
+		}
+		if(domain_prefix == 'developer') {
+			appendRecommend();
+			ParadigmSDKv3.init("dcde33d0dc6845609e9cb47f754d1094");
+			ParadigmSDKv3.renderArticle('c21148bdd1e7483e87966a00982902d4',346,605);
+		}
+	})
+</script>
+<div class='comment center'>
+	<div class='inner center' id="cmscmt_iframe"></div>
+</div>
+<script type="text/javascript" id="UYScript" src="//comment.51cto.com/static/js/api_js/iframe_cmt.js" async=""></script>-->
+
+        </div>
+       
+    </div>
+    <!-- 文章左侧结束 -->
+    <!-- 文章右侧 -->
+  
+<script>
+    $(function(){
+        var host = window.location.host;
+        var domain_prefix = host.replace(/\.51cto\.com/, '');
+        ParadigmSDKv3.init("dcde33d0dc6845609e9cb47f754d1094");
+        if(domain_prefix == 'developer'){
+            ParadigmSDKv3.renderArticle('279ee0c8d3f94395a91a27085384c3b9',346,682);
+        }else{
+            ParadigmSDKv3.renderArticle('279ee0c8d3f94395a91a27085384c3b9',269,460);
+        }
+    })
+</script>
+<!--推荐系统end-->
+</div>
+       
+        <div></div>
+       
+        
+        <!--订阅专栏 start-->
+        
+        <!--订阅专栏 end-->
+        
+        
+       
+    </div>
+    <!-- 文章右侧结束 -->
+    </div>
+
+
+
+
+<!-- 学院广告位 -->
+
+<!--<div id="edu_adver">-->
+    <!--<div class="aderbox">-->
+        <!--<span class="educlose">×</span>-->
+        <!--<a href="//edu.51cto.com/activity/6.html?qd=CMSzuoce"><img src="https://s5.51cto.com/oss/201712/05/94601626f864124ca789425588a5a1f5.jpg" width="100" height="300" alt="51CTO学院双十二活动" title="51CTO学院双十二活动"></a>-->
+    <!--</div>-->
+<!--</div>-->
+<style type="text/css">
+    #edu_adver{position:fixed; top:240px; left:50%; margin-left:-623px; width:100px; height:300px; border:1px solid #c4c4c6;}
+    #edu_adver .aderbox{position:relative;}
+    #edu_adver  .educlose{position:absolute; right:6px; top:6px; background:#655c4d; color:#fff; font-size:12px;  display:inline-block; width:13px; height:13px; text-align:center; line-height:13px; cursor:pointer;}
+</style>
+
+
+<!--  一大波JS来袭 -->
+<script type="text/javascript">
+var thistid=594615;
+//收藏按钮
+var favor_url = '#';
+var favor_title = '终于有人把Elasticsearch原理讲透了！';  
+document.getElementById('tonglanad').innerHTML=document.getElementById('tonglan').innerHTML;
+</script>
+<!-- 结束 -->
+
+
+</body></html>

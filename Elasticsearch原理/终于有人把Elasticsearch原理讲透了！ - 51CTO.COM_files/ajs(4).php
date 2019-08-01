@@ -1,0 +1,3 @@
+var OX_9fa5d08e = '';
+OX_9fa5d08e += "<"+"script type=\"text/javascript\" src=\"\"><"+"/script><"+"a href=\'//gg1.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=3546__zoneid=631__cb=2ee066fd37__oadest=https%3A%2F%2Fedu.51cto.com%2Fpx%2Ftrain%2F412%3Fwzl\' target=\'_blank\'><"+"font color=\'red\'>网络安全：零基础抵抗黑客入侵<"+"/font><"+"/a><"+"div id=\'beacon_2ee066fd37\' style=\'position: absolute; left: 0px; top: 0px; visibility: hidden;\'><"+"img src=\'//gg.51cto.com/www/delivery/lg.php?bannerid=3546&amp;campaignid=780&amp;zoneid=631&amp;loc=1&amp;referer=http%3A%2F%2Fdeveloper.51cto.com%2Fart%2F201904%2F594615.htm&amp;cb=2ee066fd37\' width=\'0\' height=\'0\' alt=\'\' style=\'width: 0px; height: 0px;\' /><"+"/div>\n";
+document.write(OX_9fa5d08e);

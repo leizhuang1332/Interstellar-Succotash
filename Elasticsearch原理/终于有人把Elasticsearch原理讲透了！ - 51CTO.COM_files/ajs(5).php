@@ -1,0 +1,3 @@
+var OX_dee4159e = '';
+OX_dee4159e += "<"+"script type=\"text/javascript\" src=\"\"><"+"/script><"+"a href=\'//gg1.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=3717__zoneid=594__cb=2c354a30c8__oadest=https%3A%2F%2Fedu.51cto.com%2Fpx%2Ftrain%2F438%3Fwzl\' target=\'_blank\'><"+"font color=\'red\'>OCP认证：甲骨文官方授权培训机构<"+"/font><"+"/a><"+"div id=\'beacon_2c354a30c8\' style=\'position: absolute; left: 0px; top: 0px; visibility: hidden;\'><"+"img src=\'//gg.51cto.com/www/delivery/lg.php?bannerid=3717&amp;campaignid=779&amp;zoneid=594&amp;loc=1&amp;referer=http%3A%2F%2Fdeveloper.51cto.com%2Fart%2F201904%2F594615.htm&amp;cb=2c354a30c8\' width=\'0\' height=\'0\' alt=\'\' style=\'width: 0px; height: 0px;\' /><"+"/div>\n";
+document.write(OX_dee4159e);

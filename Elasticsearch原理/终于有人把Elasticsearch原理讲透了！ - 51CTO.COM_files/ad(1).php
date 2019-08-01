@@ -1,0 +1,1 @@
+document.write('<iframe width=300 height=260 noresize scrolling=No frameborder=0 marginheight=0 marginwidth=0 src=\"https://other.51cto.com/ad/art/hzh/4.htm\" align=\"left\"></iframe>')
